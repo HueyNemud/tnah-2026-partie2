@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome file</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="🙤-partie-2-🙧">🙤 <strong>PARTIE 2</strong> 🙧</h1>
+<h1 id="extraction-structurée-des-indices-géographiques-dans-les-métadonnées-des-photographies-deugène-atget">Extraction structurée des indices géographiques dans les métadonnées des photographies d’<a href="https://fr.wikipedia.org/wiki/Eug%C3%A8ne_Atget">Eugène Atget</a></h1>
+<p>🙑 Au-delà de son volume, l’œuvre d’Eugène Atget frappe par la méticulosité de son classement. Véritable archiviste de son propre travail, l’auteur a systématiquement indexé ses clichés, les structurant en séries et en albums thématiques. Chaque cliché est doté d’un titre décrivant son sujet et sa localisation, souvent très précisément.</p>
+<p>Ces titres, systématiquement relevés et transcrits, font parti des métadonnées associées à chaque photographie. Les archivistes ne se sont cependant pas arrêté là et ont enrichi la description structurée de chaque cliché avec des thèmes issus du thésaurus Rameau.</p>
+<p>La richesse géographique de ces métadonnées permet aujourd’hui d’envisager une cartographie du fonds dans l’espace parisien. Cette approche, image par image, offrirait un parcours inédit au cœur de la capitale et renouvellerait notre regard sur l’œuvre du photographe.</p>
+<p>🙑 <strong>Rappel</strong>. Dans la <a href="https://github.com/HueyNemud/tnah-2026-partie1">partie 1</a>, nous avons exploré le graphe de connaissances de la bibliothèque nationale de France, publié sur <a href="http://data.bnf.fr">data.bnf.fr</a>, analysé le schéma de métadonnées <em>WEMI</em> utilisé pour structurer les métadonnées descriptives des œuvres, et extrait pour chaque photographie un graphe RDF contenant les métadonnées la décrivant. Dans le chapitre 4, les graphes individuels des photographies ont été enregistrés au format Turtle sur le disque, dans un dossier nommé <code>photographies/</code></p>
+<h2 id="⚠️-prérequis">⚠️ Prérequis</h2>
+<ul>
+<li>Avoir terminé la partie 1.</li>
+<li>Le dossier <code>photographies/</code> doit exister dans le répertoire de la partie 1 et doit contenir les fichiers <code>&lt;ark&gt;.ttl</code> de chaque photographie assignée à votre équipe.</li>
+</ul>
+<hr>
+<h2 id="🙤-objectifs">🙤 Objectifs</h2>
+<p>Cette seconde partie guide la mise en place d’un processus d’extraction de l’information géographique contenue dans les métadonnées des photographies d’Eugène Atget récoltées dans la première partie.</p>
+<p>Elle se décompose en deux étapes :</p>
+<ol>
+<li>
+<p>D’abord enrichir les graphes de métadonnées des photographies avec les <strong>thèmes Rameau</strong> qui leurs sont associés, afin d’obtenir le plus possible d’indications géographiques. Cette première étape est l’occasion d’un <strong>exercice de lecture de code</strong> Python.</p>
+</li>
+<li>
+<p>Ensuite, <strong>extraire l’information géographique pertinente</strong> dans le titre et des thèmes de chaque photographie pour obtenir un ensemble d’indications de localisation qui pourront être utilisé pour placer la photographie dans Paris et ses alentours. Cette tâche de <strong>traitement automatique du langage naturel</strong> sera réalisé avec un <strong>grand modèle de langage génératif</strong>.</p>
+</li>
+</ol>
+<p>Légende des pictogrammes utilisés :</p>
+
+<table>
+<thead>
+<tr>
+<th>Picto.</th>
+<th>Légende</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🎬</td>
+<td>Action à réaliser : à vous de jouer !</td>
+</tr>
+<tr>
+<td>💡</td>
+<td>Suggestion d’action complémentaire</td>
+</tr>
+<tr>
+<td>⚠️</td>
+<td>Avertissement</td>
+</tr>
+<tr>
+<td>ℹ️</td>
+<td>Information supplémentaire ou astuce</td>
+</tr>
+<tr>
+<td>📚</td>
+<td>Ressources : documentation, article, etc.</td>
+</tr>
+</tbody>
+</table><hr>
+<h2 id="🙤-chapitre-1--enrichissement-des-graphes-de-photographies-avec-leurs-thèmes-rameau">🙤 Chapitre 1 : enrichissement des graphes de photographies avec leurs thèmes Rameau</h2>
+<h3 id="préparation">Préparation</h3>
+<blockquote>
+<p>🎬 Copiez le dossier <code>photographies/</code> de la partie 1 vers le répertoire de la partie 2. Vérifiez qu’il contient bien l’ensemble de fichiers <code>.ttl</code> des graphes des photographies assignées à votre équipe.</p>
+</blockquote>
+<h3 id="motivation">Motivation</h3>
+<p>Le dernier chapitre de la partie 1 a abouti à la création d’une multitudes de petits graphes contenant chacun les métadonnées d’une photographie, stockés dans un répertoire <code>photographies/</code>. Chacun contient deux ressources  décrivant la photographie suivant le modèle <em>WEMI</em> : sa <strong>manifestation</strong> et son <strong>expression</strong>. La dernière, de type <strong>skos:Concept</strong>, représente la notice documentaire de l’œuvre et fait le pont avec le catalogue général de la BnF.</p>
+<p>Le graphe de la photographie <code>https://catalogue.bnf.fr/ark:/12148/cb40268288s</code> (Intérieur de M.r A., Industriel [Image fixe] : Rue Lepic) contient par exemple :</p>
+<pre class=" language-turtle"><code class="prism  language-turtle"># -------------------
+# Représente la notice documentaire de la photographie
+# -------------------
+&lt;http://data.bnf.fr/ark:/12148/cb40268288s&gt; a skos:Concept ;
+    dcterms:created "1990-10-19" ;
+    dcterms:modified "2022-12-13" ;
+    foaf:focus &lt;http://data.bnf.fr/ark:/12148/cb40268288s#about&gt; .
+
+# -------------------
+# La ressource de type Manifestation
+# -------------------
+&lt;http://data.bnf.fr/ark:/12148/cb40268288s#about&gt; a &lt;http://rdaregistry.info/Elements/c/#C10007&gt;, &lt;http://rdvocab.info/uri/schema/FRBRentitiesRDA/Manifestation&gt; ;
+    ns7:FRBNF 40268288 ;
+    dcterms:date "1910/1911" ;
+    dcterms:description "1 photogr. pos. sur papier albuminé : d'après négatif sur verre au gélatinobromure ; 22,6 x 17,6 cm (épr.)" ;
+    dcterms:subject &lt;http://data.bnf.fr/ark:/12148/cb11932931q&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb11939981z&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb11940294d&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb11978491g&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb13162676c&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb166888940&gt; ;
+    dcterms:title "Intérieur de M.r A., Industriel : Rue Lepic, [photographie]" ;
+    ns3:P30016 &lt;https://gallica.bnf.fr/ark:/12148/btv1b105069316&gt; ;
+    ns3:P30139 &lt;http://data.bnf.fr/ark:/12148/cb40268288s#Expression&gt; ;
+    ns3:P30279 "France" ;
+    ns2:P60470 "Technique de l'image : photographie positive. - papier albuminé. - procédé au bromure d'argent. - verre. Note : Num. de nég. coupé dans l'épr. en b. à dr." ;
+    ns4:note "Technique de l'image : photographie positive. - papier albuminé. - procédé au bromure d'argent. - verre. Note : Num. de nég. coupé dans l'épr. en b. à dr." ;
+    ns5:electronicReproduction &lt;https://gallica.bnf.fr/ark:/12148/btv1b105069316&gt; ;
+    ns5:expressionManifested &lt;http://data.bnf.fr/ark:/12148/cb40268288s#Expression&gt; ;
+    rdfs:seeAlso &lt;https://catalogue.bnf.fr/ark:/12148/cb40268288s&gt; .
+
+# -------------------
+# La ressource de type Expression
+# -------------------
+&lt;http://data.bnf.fr/ark:/12148/cb40268288s#Expression&gt; a &lt;http://rdaregistry.info/Elements/c/#C10006&gt;,
+        &lt;http://rdvocab.info/uri/schema/FRBRentitiesRDA/Expression&gt; ;
+    ns6:r530 &lt;http://data.bnf.fr/ark:/12148/cb11889340k#about&gt; ;
+    ns1:pht &lt;http://data.bnf.fr/ark:/12148/cb11889340k#about&gt; ;
+    dcterms:contributor &lt;http://data.bnf.fr/ark:/12148/cb11889340k#about&gt; ;
+    dcterms:language &lt;http://id.loc.gov/vocabulary/iso639-2/fre&gt; ;
+    dcterms:subject &lt;http://data.bnf.fr/ark:/12148/cb11932931q&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb11939981z&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb11940294d&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb11978491g&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb13162676c&gt;,
+        &lt;http://data.bnf.fr/ark:/12148/cb166888940&gt; ;
+    dcterms:type dcmitype:StillImage ;
+    owl:sameAs &lt;http://data.bnf.fr/ark:/12148/cb40268288s#frbr:Expression&gt; .
+</code></pre>
+<blockquote>
+<p>🎬 Dans ce graphe, repérez :</p>
+<ul>
+<li>quelle <strong>propriété</strong> représente le <strong>titre</strong> et quelle est la <strong>ressource</strong> qui porte cette information.</li>
+<li>quelle <strong>propriété</strong> représente les <strong>thèmes RAMEAU</strong> associés à la photographie et quelles sont les <strong>ressources</strong> qui portent cette information. N’hésitez pas à ouvrir les URIs dans votre navigateur pour trouver lesquelles identifient des thèmes Rameau.</li>
+</ul>
+</blockquote>
+<p>Sur la page de présentation d’un thème, par exemple <a href="http://data.bnf.fr/ark:/12148/cb166888940">data.bnf.fr/ark:/12148/cb166888940</a>, on voit qu’il possède un titre ainsi de nombreuses autres informations : domaine, relations liées, formes alternatives, concepts plus généraux ou plus précis, etc.</p>
+<p>Le titre et les formes alternatives sont particulièrement intéressantes car, lorsque le thème est géographique, c’est là qu’on va trouver des indications spatiales qu’on pourra mettre à profit pour une phase ultérieure de géocodage.</p>
+<p>L’enjeu est donc de <strong>récupérer ces informations</strong> et <strong>enrichir chaque graphe de photographie</strong> avec les titres et les formes alternatives des thèmes rameaux qui lui sont associés.</p>
+<h3 id="anatomie-dun-script-python-pour-automatiser-lenrichissement-des-graphes">Anatomie d’un script Python pour automatiser l’enrichissement des graphes</h3>
+<p>Dans le dossier courant se trouve un fichier nommé <code>fetch_themes.py</code> qui définit un ensemble de fonctions Python. Elles forment des briques élémentaires de traitement que l’on peut assembler pour former un algorithme d’enrichissement complet d’un graphe de photographie.</p>
+<blockquote>
+<p>🎬 Ouvrez ce fichier dans votre IDE et parcourez le une première fois globalement pour comprendre son organisation générale.<br>
+Après cette première lecture:</p>
+<ol>
+<li>reportez ici ou dans un fichier texte les <strong>signatures des fonctions</strong> du fichier, c’est à dire leur nom, leurs paramètres et leur type de leur retour s’il existe.</li>
+<li>Collectivement, dessinez le <strong>graphe de flux</strong> de l’enrichissement d’un graphe. Le point de départ est un fichier <code>.ttl</code> d’un graphe de photographie, et on veut arriver à un nouveau fichier <code>.ttl</code> enrichi qui contient les titres et les noms alternatifs des thèmes Rameau associés à la photographie. Comment chaîner les différentes fonctions disponibles pour passer de l’état initial à l’état enrichi ?</li>
+</ol>
+</blockquote>
+<p>Tracer le graphe de flux d’une donnée permet de comprendre comment les différentes fonctions doivent être agencées en un algorithme d’enrichissement d’un graphe.</p>
+<blockquote>
+<p>🎬 Collectivement, écrivez sous la forme d’un pseudo-code l’algorithme complet d’enrichissement :</p>
+<ol>
+<li>d’un seul graphe de photographie : on part d’un fichier <code>photographies/&lt;ark&gt;.ttl</code> et on doit arriver à un fichier <code>photographies_avec_themes/&lt;ark&gt;.ttl</code></li>
+<li>tous les graphes de photographies du dossier <code>photographies/</code> : même logique que 1. mais avec tous les fichiers <code>.ttl</code></li>
+</ol>
+</blockquote>
+<p>Une fois l’algorithme écrit :</p>
+<blockquote>
+<p>🎬Ouvrez le fichier <code>main.txt</code> : il contient le point d’entrée d’un script Python qui implémente l’algorithme d’enrichissement pour tous les graphes de photographies.</p>
+<ol>
+<li>Copiez son contenu et collez le dans <code>fetch_themes.py</code> juste après le bloc  <code># --- D. POINT D'ENTRÉE DU SCRIPT</code></li>
+<li>Vérifiez qu’il contient l’implémentation de l’algorithme d’enrichissement imaginé.</li>
+</ol>
+</blockquote>
+<h3 id="enrichissement-des-graphes">Enrichissement des graphes</h3>
+<p>Doté de son point d’entrée, le fichier <code>fetch_themes.py</code> est maintenant un script Python exécutable depuis le terminal.<br>
+Une fois lancé, il enrichira le nombre de graphes fixés par la valeur de <code>graph_processing_limit</code>.</p>
+<blockquote>
+<p>🎬 Exécutez une première fois le script sur 3 fichiers, en définissant <code>graph_processing_limit = 3</code>.</p>
+<pre class=" language-bash"><code class="prism  language-bash">uv run fetch_themes.py
+</code></pre>
+<p>Un fois certain.e.s que le script fonctionne correctement, retirez la limite de traitement puis relancez le script.<br>
+Ouvrez finalement quelques uns des fichiers <code>.html</code> de vos graphe enrichis pour vérifier qu’ils contiennent bien les titres et labels des thèmes Rameau récupérés.</p>
+</blockquote>
+<hr>
+<h3 id="🏁-fin-du-chapitre-1">🏁 Fin du chapitre 1</h3>
+<p>Ce premier chapitre a permis de découvrir et comprendre un fichier Python “professionnel” contenant un code d’enrichissement des graphes produits dans la partie 1.<br>
+Cet enrichissement permet de récupérer de nombreuses informations sur une photographie, donc certaines contenant des indices géographiques pouvant servir au géocodage.</p>
+<p>Il est temps de passer au <strong>chapitre 2</strong> pour apprendre à extraite spécifiquement cette information géographique pour pouvoir l’exploiter par la suite.</p>
+</div>
+</body>
+
+</html>

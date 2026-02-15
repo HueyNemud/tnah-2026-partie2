@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome file</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="🙤-partie-2-🙧">🙤 <strong>PARTIE 2</strong> 🙧</h1>
+<h1 id="extraction-structurée-des-indices-géographiques-dans-les-métadonnées-des-photographies-deugène-atget">Extraction structurée des indices géographiques dans les métadonnées des photographies d’<a href="https://fr.wikipedia.org/wiki/Eug%C3%A8ne_Atget">Eugène Atget</a></h1>
+<p>🙑 Au-delà de son volume, l’œuvre d’Eugène Atget frappe par la méticulosité de son classement. Véritable archiviste de son propre travail, l’auteur a systématiquement indexé ses clichés, les structurant en séries et en albums thématiques. Chaque cliché est doté d’un titre décrivant son sujet et sa localisation, souvent très précisément.</p>
+<p>Ces titres, systématiquement relevés et transcrits, font parti des métadonnées associées à chaque photographie. Les archivistes ne se sont cependant pas arrêté là et ont enrichi la description structurée de chaque cliché avec des thèmes issus du thésaurus Rameau.</p>
+<p>La richesse géographique de ces métadonnées permet aujourd’hui d’envisager une cartographie du fonds dans l’espace parisien. Cette approche, image par image, offrirait un parcours inédit au cœur de la capitale et renouvellerait notre regard sur l’œuvre du photographe.</p>
+<p>🙑 <strong>Rappel</strong>. Dans la <a href="https://github.com/HueyNemud/tnah-2026-partie1">partie 1</a>, nous avons exploré le graphe de connaissances de la bibliothèque nationale de France, publié sur <a href="http://data.bnf.fr">data.bnf.fr</a>, analysé le schéma de métadonnées <em>WEMI</em> utilisé pour structurer les métadonnées descriptives des œuvres, et extrait pour chaque photographie un graphe RDF contenant les métadonnées la décrivant. Dans le chapitre 4, les graphes individuels des photographies ont été enregistrés au format Turtle sur le disque, dans un dossier nommé <code>photographies/</code></p>
+<p><strong>⚠️ Prérequis</strong></p>
+<ul>
+<li>Avoir terminé la partie 1.</li>
+<li>Le dossier <code>photographies/</code> doit exister dans le répertoire de la partie 1 et doit contenir les fichiers <code>&lt;ark&gt;.ttl</code> de chaque photographie assignée à votre équipe.</li>
+</ul>
+<hr>
+<h2 id="🙤-objectifs">🙤 Objectifs</h2>
+<p>Cette seconde partie guide la mise en place d’un processus d’extraction de l’information géographique contenue dans les métadonnées des photographies d’Eugène Atget récoltées dans la première partie.</p>
+<p>Elle se décompose en deux étapes :</p>
+<ol>
+<li>
+<p>D’abord enrichir les graphes de métadonnées des photographies avec les <strong>thèmes Rameau</strong> qui leurs sont associés, afin d’obtenir le plus possible d’indications géographiques. Cette première étape est l’occasion d’un <strong>exercice de lecture de code</strong> Python.</p>
+</li>
+<li>
+<p>Ensuite, <strong>extraire l’information géographique pertinente</strong> dans le titre et des thèmes de chaque photographie pour obtenir un ensemble d’indications de localisation qui pourront être utilisé pour placer la photographie dans Paris et ses alentours. Cette tâche de <strong>traitement automatique du langage naturel</strong> sera réalisé avec un <strong>grand modèle de langage génératif</strong>.</p>
+</li>
+</ol>
+<p>Légende des pictogrammes utilisés :</p>
+
+<table>
+<thead>
+<tr>
+<th>Picto.</th>
+<th>Légende</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🎬</td>
+<td>Action à réaliser : à vous de jouer !</td>
+</tr>
+<tr>
+<td>💡</td>
+<td>Suggestion d’action complémentaire</td>
+</tr>
+<tr>
+<td>⚠️</td>
+<td>Avertissement</td>
+</tr>
+<tr>
+<td>ℹ️</td>
+<td>Information supplémentaire ou astuce</td>
+</tr>
+<tr>
+<td>📚</td>
+<td>Ressources : documentation, article, etc.</td>
+</tr>
+</tbody>
+</table><hr>
+<h2 id="🙤-chapitre-2--extraction-structurée-de-linformation-géographique-contenue-dans-les-métadonnées-des-photographies">🙤 Chapitre 2 : extraction structurée de l’information géographique contenue dans les métadonnées des photographies</h2>
+<h3 id="motivation">Motivation</h3>
+<p>Le premier chapitre a permis d’ajouter à chaque graphe de photographie les informations textuelles des thèmes Rameau associés.<br>
+Par exemple :</p>
+<pre class=" language-raw"><code class="prism  language-raw">=== PHOTO : Au Soleil d'or : 84 [quatre-vingt-quatre] Rue S.t Sauveur (Modifié), [photographie] ===
+Lien : http://data.bnf.fr/ark:/12148/cb40268281c#about
+Thèmes assignés:
+ • « Dans l'art » - altLabels : « Représentation dans l'art », « Dans la sculpture », « Dans la peinture », « Représentation iconographique », « Dans les arts graphiques »
+ • « Cafés » - altLabels : « Cafés-bars », « Débits de boissons », « Estaminets », « Brasseries (cafés) », « Zincs (cafés) », « Bistrots », « Cafés publics », « Cafés (établissements) », « Bars »
+ • « Paris (France) »
+ • « Paris (France) -- Rue Saint-Sauveur » - altLabels : « Rue Saint-Sauveur (Paris, France) », « Saint-Sauveur, Rue (Paris, France) »
+ • « Enseignes » - altLabels : « Signes et indications », « Enseignes commerciales »
+ • « Ferronnerie d'art » - altLabels : « Serrurerie d'art », « Fer forgé, Objets en », « Fer ornemental », « Ferronnerie architecturale », « Ferrures », « Ferronneries », « Ferronnerie décorative », « Fer forgé », « Objets en fer forgé », « Ferronnerie (architecture) »
+ • « Soleil » - altLabels : « Physique solaire »
+</code></pre>
+<p>On repère de nombreuses informations géographiques qui renseignent plus ou moins précisément sur la localisation de cette photographie:</p>
+<ol>
+<li>Le <strong>titre</strong> de la photo contient un toponyme, « Au Soleil d’or », ainsi qu’une adresse postal : « 84 S.t Sauveur »</li>
+<li>Les <strong>thèmes Rameau</strong> donnent une série d’indices géographiques supplémentaires, ex. « Paris (France) – Rue Saint-Sauveur »</li>
+</ol>
+<p>En lisant ces métadonnées, un humain peut immédiatement identifier une <strong>hiérarchie spatiale</strong> :</p>
+<pre class=" language-raw"><code class="prism  language-raw">📍 France [pays]
+└── 🏙️ Paris [ville]
+    └── 🛣️ rue Saint-Sauveur [rue]
+        └── 🏠 n° 84 rue Saint-Sauveur [adresse]
+            └── ☀️ « Au Soleil d'or » [lieu dit / enseigne]
+</code></pre>
+<p>Avoir une hiérarchie spatiale est extrêmement précieux pour le géocodage car on peut alors chercher à localiser une photo au niveau le plus fin, puis remonter dans la hiérarchie si cela n’est pas possible, par exemple parce que le lieu a disparu.<br>
+C’est aussi un moyen élégant de regrouper les photos par niveau de granularité spatiale.</p>
+<p>Cette opération qui couple lecture, identification de l’information utile et déduction d’une hiérarchie est intuitive pour un humain, mais est en réalité assez complexe pour une machine. En effet, elle repose sur une compréhension contextuelle des thèmes et implique une connaissance implicite.<br>
+Pour une machine, “Paris (France)” est juste une chaîne de caractère.<br>
+Comprendre que le texte “84 [quatre-vingt-quatre] Rue S.t Sauveur” correspond à une adresse et peut être normalisé en “84 rue Saint-Sauveur” nécessite de coder des règles spécifiques, ce qui devient rapidement à la fois lourd et fragile.</p>
+<p>Heureusement, les <strong>grands modèles de langages (LLMs)</strong> offrent une alternative particulièrement adaptée à ce genre de tache qui mêle compréhension, extraction et génération, grâce à leurs capacités de raisonnement de haut niveau.</p>
+<p>Pour des raisons de simplicité, l’expérimentation sera réalisée avec les modèles de <strong><a href="https://mistral.ai/fr">Mistral</a></strong>.</p>
+<h3 id="un-prompt-naïf-pour-extraire-une-hiérarchie-géographique-dans-les-titres-et-thèmes-dune-photographie.">Un <em>prompt</em> naïf pour extraire une hiérarchie géographique dans les titres et thèmes d’une photographie.</h3>
+<p>Un grand modèle de langage peut être guidé par des instructions pour réaliser une tâche de traitement de données sans qu’il soit nécessaire de l’entraîner spécialement sur cette tâche.</p>
+<p>Ces instructions sont rassemblées dans un texte donné au modèle  nommé <strong>prompt</strong>.<br>
+S’il n’existe pas de “bible” de la rédaction de prompt, il y a quand même des règles générales qui décrivent la structure générale d’un prompt basique :</p>
+<blockquote>
+<p>a. Assigner un rôle au modèle pour la tache.<br>
+b. Décrire la tâche à réaliser<br>
+c. Si nécessaire, donner des règles spécifiques pour gérer les cas complexes, ambigus, etc.</p>
+</blockquote>
+<p>Voici un <em>prompt</em> simpliste que l’on pourrait utiliser pour extraire et organiser l’information géographique des titres et thèmes d’une photographie :</p>
+<pre class=" language-raw"><code class="prism  language-raw"># Rôle
+Tu es un expert en extraction d'information géographique dans des métadonnées patrimoniales.
+
+# Tâche
+Ta tâche est d'analyser un ensemble de métadonnées textuelles décrivant une photographie et d'extraire la liste des entités géographiques présentes.
+
+# Règles
+Règle spécifique : organise les entités de la plus précise à la plus générale.
+
+Les métadonnées à analyser seront données dans le prochain input.
+</code></pre>
+<blockquote>
+<p>ℹ️ Notez qu’on ne donne ici <strong>aucun exemple</strong> de traitement. Cette stratégie “brute” s’appelle <strong>0-shot prompting</strong>, par opposition au <strong>few-shot prompting</strong> où l’on fournit quelques exemples dans le prompt.</p>
+</blockquote>
+<p>On peut directement essayer ce prompt en utilisant le modèle “chatbot” grand-public de Mistral, disponible à l’adresse <a href="https://chat.mistral.ai">https://chat.mistral.ai</a></p>
+<blockquote>
+<p>🎬 Rendez-vous sur <a href="https://chat.mistral.ai">https://chat.mistral.ai</a>, donnez le prompt ci-dessus au modèle, puis donnez le bloc de métadonnées au début de la section <strong>Motivation</strong>. Le modèle renvoit-il quelque chose qui vous semple directement utilisable dans un programme informatique ? Extrait-il toute l’information géographique, nom du lieu “Au Soleil d’or” compris ? Que se passe t-il si vous donnez plusieurs fois de suite les mêmes métadonnées ?</p>
+</blockquote>
+<p>Vous l’aurez compris, ce <em>prompt</em> est beaucoup trop naïf pour fonctionner correctement.<br>
+Un LLM, aussi puissant qu’il est, n’est pas dans votre tête - il faut le guider beaucoup plus strictement.</p>
+<p>Il manque plusieurs éléments critiques :</p>
+<ol>
+<li>le modèle est libre d’ajouter du texte supplémentaire dans sa réponse ;</li>
+<li>on ne contraint pas le format de réponse ;</li>
+<li>on explicite jamais la hiérarchie exacte à extraire.</li>
+</ol>
+<h3 id="un-prompt-un-peu-moins-naïf-grâce-au-few-shot-prompting">Un <em>prompt</em> un peu moins naïf grâce au <em>few-shot prompting</em></h3>
+<p>À l’heure actuelle, la manière la plus simple de contraindre fortement un LLM à produire ce que l’on souhaite consiste à lui donner des exemples.<br>
+En effet, les LLMs sont extrêmement guidés par les exemples, bien plus que par toute explication complexe qu’on pourrait leur fournir.<br>
+Cette stratégie qui consiste à donner des exemples dans les instructions à un modèle, avant d’envoyer les véritables données à traite est nommée <em>few-shot prompting</em>.</p>
+<p>Avec un seul exemple, on peut expliquer au modèle à la fois le <strong>format souhaité</strong> ainsi que <strong>la hiérarchie spatiale</strong> attendue de façon très simple : il suffit d’ajouter au <em>prompt</em> un extrait de métadonnées à traiter, ainsi que le résultat attendu.</p>
+<p>Disons que, lorsqu’on donne les métadonnées d’une photo au LLM, on souhaite récupérer une hiérarchie au format JSON, avec les niveaux suivants :</p>
+<ul>
+<li>Toponyme : le nom du lieu précis. S’il est présent, il est généralement dans le titre ;</li>
+<li>Adresse : adresse postale, donnée dans le titre également ;</li>
+<li>Voie : dans le titre ou les thèmes Rameau ;</li>
+<li>Ville : généralement dans les thèmes Rameau ;</li>
+<li>Pays : dans les thèmes Rameau également, ou doit être déduit.</li>
+</ul>
+<p>Bien sûr, des champs peuvent être absents, il s’agit d’une hiérarchie maximale.</p>
+<p>Voici un exemple de métadonnées, puis le résultat d’extraction attendu au format JSON :</p>
+<pre class=" language-raw"><code class="prism  language-raw">=== PHOTO : Au Bon Puits : Rue Michel Le Comte 36 (Disparu en 1904), [photographie] ===
+Lien : http://data.bnf.fr/ark:/12148/cb40268303v#about
+Thèmes assignés:
+ • « Vin -- Industrie et commerce » - altLabels : « Commerce vinicole », « Industrie viticole », « Commerce viticole », « Production viticole », « Production vinicole », « Industrie vinicole »
+ • « Paris (France) -- Rue Michel-le-Comte » - altLabels : « Rue Michel-le-Comte (Paris, France) », « Michel-le-Comte, Rue (Paris, France) »
+ • « Paris (France) »
+ • « Enseignes » - altLabels : « Signes et indications », « Enseignes commerciales »
+ • « Ferronnerie d'art » - altLabels : « Ferronnerie architecturale », « Ferrures », « Serrurerie d'art », « Ferronneries », « Fer forgé, Objets en », « Fer ornemental », « Ferronnerie décorative », « Ferronnerie (architecture) », « Fer forgé », « Objets en fer forgé »
+</code></pre>
+<pre class=" language-json"><code class="prism  language-json"><span class="token punctuation">{</span>
+	<span class="token string">"toponyme"</span><span class="token punctuation">:</span> <span class="token string">"Au Bon Puits"</span><span class="token punctuation">,</span>
+	<span class="token string">"adresse"</span><span class="token punctuation">:</span> <span class="token string">"36 rue Michel Le Comte"</span><span class="token punctuation">,</span>
+	<span class="token string">"voie"</span><span class="token punctuation">:</span> <span class="token string">"rue Michel Le Comte"</span><span class="token punctuation">,</span>
+	<span class="token string">"ville"</span><span class="token punctuation">:</span> <span class="token string">"Paris"</span><span class="token punctuation">,</span>
+	<span class="token string">"pays"</span><span class="token punctuation">:</span> <span class="token string">"France"</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<blockquote>
+<p>🎬 Reprenez le prompt naïf, et améliorez-le en ajoutant une section “# Exemple” contenant cet exemple d’entrée et de sortie attendue.<br>
+Réappliquez le traitement aux métadonnées de la section <strong>Motivation</strong>.<br>
+Le résultat devrait cette fois correspondre à ce qu’on attend, un extrait de JSON contenant la hiérarchie géographique extraite :</p>
+<pre class=" language-json"><code class="prism  language-json"><span class="token punctuation">{</span> <span class="token string">"toponyme"</span><span class="token punctuation">:</span> <span class="token string">"Au Soleil d'or"</span><span class="token punctuation">,</span> <span class="token string">"adresse"</span><span class="token punctuation">:</span> <span class="token string">"84 rue Saint-Sauveur"</span><span class="token punctuation">,</span> <span class="token string">"voie"</span><span class="token punctuation">:</span> <span class="token string">"rue Saint-Sauveur"</span><span class="token punctuation">,</span> <span class="token string">"ville"</span><span class="token punctuation">:</span> <span class="token string">"Paris"</span><span class="token punctuation">,</span> <span class="token string">"pays"</span><span class="token punctuation">:</span> <span class="token string">"France"</span> <span class="token punctuation">}</span>
+</code></pre>
+</blockquote>
+<blockquote>
+<p>💡 Donnez à nouveau les mêmes métadonnées au LLM, plusieurs fois de suite. Est-ce que contenu et le résultat est stable ?</p>
+</blockquote>
+<p>Ce prompt produit des résultats de qualité suffisante pour passer à l’automatisation du traitement des métadonnées grâce à Mistral… et Python 🙂</p>
+<h3 id="extraction-structurée-avec-mistral">Extraction structurée avec Mistral</h3>
+<p>Il est possible d’interagir avec les modèles de Mistral en Python grâce à la bibliothèque <code>mistralai</code>.</p>
+<blockquote>
+<p>🎬 Installez dès maintenant le package avec :</p>
+<pre class=" language-bash"><code class="prism  language-bash">uv add mistralai
+</code></pre>
+</blockquote>
+<p>Pour apprendre à utiliser cette bibliothèque, intéressons-nous directement au cas d’usage qui nous intéresse : <strong>l’extraction d’information structurée</strong> des dans textes.</p>
+<blockquote>
+<p>🎬 Rendez-vous dans la documentation générale de Mistral, sur <a href="https://docs.mistral.ai">https://docs.mistral.ai</a>, et cherchez dans le menu gauche l’entrée <em>Structured Output</em>.<br>
+Lisez le texte de la  petite page “Structured Outputs” qui s’ouvre et répondez à ces deux questions :</p>
+<ol>
+<li>Quel format structuré est géré par les modèles Mistral ?</li>
+<li>Quelles sont les deux possibilités disponibles pour faire de l’extraction structurée ?</li>
+</ol>
+</blockquote>
+<p>Commençons par ne pas suivre les conseils de Mistral en choisissant le <strong>JSON mode</strong>, plus simple pour des débutants.</p>
+<blockquote>
+<p>🎬 Rendez-vous sur la page de description de ce mode en suivant le lien <a href="https://docs.mistral.ai/capabilities/structured_output/json_mode">JSON: To enforce a JSON output</a> sur la page <em>Structured Output</em>, ou en cliquant sur le sous-menu <em>JSON Mode</em> dans le panneau gauche.<br>
+Lisez la courte documentation en faisant attention à bien selectionner l’onglet “Python” pour voir l’exemple … en Python  😉</p>
+</blockquote>
+<blockquote>
+<p>🎬 Dans le répertoire de la partie 2, créez un nouveau fichier de script Python nommé <code>extract_geohierarchy.py</code> puis collez-y le code Python donné sous la section <em>How to generate JSON consistently</em> de la page de documentation.<br>
+Ajouter en fin de fichier la ligne suivante pour afficher la réponse du modèle :</p>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>chat_response<span class="token punctuation">.</span>choices<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>message<span class="token punctuation">.</span>content<span class="token punctuation">)</span>
+</code></pre>
+</blockquote>
+<p>Avant de pouvoir tester ce script, il faut d’abord renseigner votre <strong>clé API Mistral</strong>.<br>
+On voir dans l’extrait de code cette ligne :</p>
+<pre class=" language-python"><code class="prism  language-python">api_key  <span class="token operator">=</span>  os<span class="token punctuation">.</span>environ<span class="token punctuation">[</span><span class="token string">"MISTRAL_API_KEY"</span><span class="token punctuation">]</span>
+</code></pre>
+<p>Cela signifie que la valeur de la clé est lue depuis la <strong>variable d’environnement</strong> <code>MISTRAL_API_KEY</code>.<br>
+Il faut donc la déclarer dans votre session de terminal avant de pouvoir exécuter le script.</p>
+<blockquote>
+<p>🎬 Dans votre session de terminal, déclarez votre clé Mistral ainsi :</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">export</span> MISTRAL_API_KEY<span class="token operator">=</span>votre_clé_mistral_ici
+</code></pre>
+<p>Vous pouvez ensuite lancer le script Python :</p>
+<pre class=" language-bash"><code class="prism  language-bash">uv run extract_geohierarchy.py
+</code></pre>
+</blockquote>
+<p>Vous devriez obtenir le résultat suivant :</p>
+<pre class=" language-bash"><code class="prism  language-bash">❯ uv run ./extract_geohierarchy.py
+<span class="token punctuation">{</span>
+  <span class="token string">"meal"</span><span class="token keyword">:</span> <span class="token string">"Boeuf Bourguignon"</span>,
+  <span class="token string">"ingredients"</span><span class="token keyword">:</span> <span class="token punctuation">[</span>
+    <span class="token string">"beef"</span>,
+    <span class="token string">"red wine (Burgundy)"</span>,
+    <span class="token string">"onions"</span>,
+    <span class="token string">"carrots"</span>,
+    <span class="token string">"garlic"</span>,
+    <span class="token string">"mushrooms"</span>,
+    <span class="token string">"bacon"</span>,
+    <span class="token string">"bouquet garni"</span>,
+    <span class="token string">"beef stock"</span>,
+    <span class="token string">"butter"</span>,
+    <span class="token string">"flour"</span>,
+    <span class="token string">"salt"</span>,
+    <span class="token string">"pepper"</span>
+  <span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</div>
+</body>
+
+</html>

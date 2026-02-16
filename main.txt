@@ -38,34 +38,10 @@ if __name__ == "__main__":
         print(f"Début de l'enrichissement pour : {turtle_photo_file.name}")
 
         try:
-            # 1. IMPORT : On transforme le fichier texte en un graphe RDF manipulable
-            photo_graph = import_turtle_file(turtle_photo_file)
-
-            # 2. IDENTIFICATION : On trouve les ressources du graphe qui
-            # correspondent aux thèmes Rameau associés à la photo
-            rameau_themes = get_rameau_themes(photo_graph)
-
-            # 3. RÉCUPÉRATION : On demande à la BnF les labels textuels de ces thèmes Rameau.
-            rameau_labels_graph = fetch_themes_labels(rameau_themes, databnf)
-
-            # 4. FUSION : On injecte les labels récupérés dans le graphe de la photo.
-            enriched_photo_graph = merge_labels_into_photo_graph(
-                photo_graph, rameau_labels_graph
-            )
-
-            # 5. CONTRÔLE : On affiche un résumé textuel dans la console
-            report = build_summary_report(enriched_photo_graph)
-            print(report)
-
-            # 6. EXPORT : On sauvegarde le résultat final sur le disque
-            enriched_photo_file = output_dir / turtle_photo_file.name
-            export_to_turtle(enriched_photo_graph, enriched_photo_file)
-
-            # Bonus : on exporte aussi une version HTML du graphe enrichi
-            # pour pouvoir le visualiser facilement dans un navigateur
-            export_graph_to_html(
-                enriched_photo_graph, enriched_photo_file.with_suffix(".html")
-            )
+            
+            # -------------------
+            # 🏗️ Implémentez l'algorithme principal ici !
+            # -------------------
 
             print(f"Réussite : {turtle_photo_file.name} enrichi.")
 

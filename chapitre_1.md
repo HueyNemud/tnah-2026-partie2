@@ -134,7 +134,7 @@ Une fois l'algorithme écrit :
 > 🎬Ouvrez le fichier `main.txt` : il contient le point d'entrée d'un script Python qui implémente l'algorithme d'enrichissement pour tous les graphes de photographies.
 >
 > 1. Copiez son contenu et collez le dans `fetch_themes.py` juste après le bloc  `# --- D. POINT D'ENTRÉE DU SCRIPT`
-> 2. Vérifiez qu'il contient l'implémentation de l'algorithme d'enrichissement imaginé.
+> 2. Implémentez l'algorithme d'enrichissement à l'intérieur de la boucle principale.
 
 ### Enrichissement des graphes
 

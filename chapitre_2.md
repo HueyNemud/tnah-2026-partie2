@@ -340,12 +340,17 @@ for turtle_file in turtle_files[:1]:
 
 > 🎬 En début de script, ajoutez la déclaration de la fonction suivante, qui prend en paramètre le chemin vers le graphe `.ttl` stocké dans la variable de boucle `turtle_file` ainsi que la réponse du modèle Mistral `chat_response` et sauvegarde le résultat en JSON sur le disque dur à coté du fichier ` :
 ```python 
-def  save_to_json(chat_response,  turtle_file):
+from  mistralai  import  ChatCompletionResponse
+import  json
+
+
+def  save_to_json(chat_response:  ChatCompletionResponse,  turtle_file:  Path):
 	"""Sauvegarde la réponse de Milstra en JSON à coté du fichier `turtle_file`."""
-	import  json # <-- Import à déplacer en entête du script pour suivre les bonnes 	output_file  =  turtle_file.with_suffix(".json")
-	data  =  chat_response.choices[0].message.content
-	with  open(output_file,  "w",  encoding="utf-8")  as  f:
-		json.dump(data,  f,  ensure_ascii=False,  indent=4)
+	output_file  =  turtle_file.with_suffix(".json")
+	response_content  =  chat_response.choices[0].message.content
+	with  open(output_file,  "w",  encoding="utf-8")  as  file:
+		json_object  =  json.loads(response_content)
+		json.dump(json_object,  file,  ensure_ascii=False,  indent=4)
 ```
 >🎬  Appelez cette fonction juste après l'instruction `print(chat_response.choices[0].message.content)` en lui passant la réponse du modèle et le chemin vers le fichier Turtle du graphe.
 ```python 

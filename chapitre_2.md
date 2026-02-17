@@ -36,13 +36,13 @@ Ce chapitre 2 porte sur la **seconde étape**.
 
 Légende des pictogrammes utilisés :
 
-| Picto. | Légende                                   |
-| ------ | ----------------------------------------- |
-| 🎬      | Action à réaliser : à vous de jouer !     |
-| 💡      | Suggestion d'action complémentaire        |
-| ⚠️      | Avertissement                             |
-| ℹ️      | Information supplémentaire ou astuce      |
-| 📚      | Ressources : documentation, article, etc. |
+| Picto. | Légende |
+|  ------  |  -----------------------------------------  |
+| 🎬 | Action à réaliser : à vous de jouer ! |
+| 💡 | Suggestion d'action complémentaire |
+| ⚠️ | Avertissement |
+| ℹ️ | Information supplémentaire ou astuce |
+| 📚 | Ressources : documentation, article, etc. |
 
 <hr/>
 
@@ -373,6 +373,10 @@ for turtle_file in turtle_files[:1]:
 	time.sleep(1.5)
 ```
 >🎬 Vous pouvez maintenant retirer le *slicing* sans crainte puis exécuter enfin l'extraction structurée pour toutes les photographies ! 🥳
+
+>💡 Observez les résultats d'extraction qui s'affichent au fur et à mesure sur le terminal.
+> Est-ce que le schéma que l'on a fixé est toujours respecté par le LLM ? 
+> Discutons-en ! 💬
 
 ###  🏁 Fin du chapitre 2
 

@@ -38,6 +38,8 @@ Tu es un expert en extraction d'information géographique dans des métadonnées
 
 # Règles
 - les entités doivent être triée de la plus précise à la plus générale.
+- si aucune ville n'est mentionnée, la ville est Paris.
+- si aucun pays n'est mentionné, le pays est la France.
 
 # Exemple
 **Résumé descriptif **

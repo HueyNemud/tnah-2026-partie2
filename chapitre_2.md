@@ -36,13 +36,13 @@ Ce chapitre 2 porte sur la **seconde étape**.
 
 Légende des pictogrammes utilisés :
 
-| Picto. | Légende |
-|  ------  |  -----------------------------------------  |
-| 🎬 | Action à réaliser : à vous de jouer ! |
-| 💡 | Suggestion d'action complémentaire |
-| ⚠️ | Avertissement |
-| ℹ️ | Information supplémentaire ou astuce |
-| 📚 | Ressources : documentation, article, etc. |
+| Picto. | Légende                                   |
+| ------ | ----------------------------------------- |
+| 🎬      | Action à réaliser : à vous de jouer !     |
+| 💡      | Suggestion d'action complémentaire        |
+| ⚠️      | Avertissement                             |
+| ℹ️      | Information supplémentaire ou astuce      |
+| 📚      | Ressources : documentation, article, etc. |
 
 <hr/>
 
@@ -350,7 +350,8 @@ def  save_to_json(chat_response:  ChatCompletionResponse,  turtle_file:  Path):
 	response_content  =  chat_response.choices[0].message.content
 	with  open(output_file,  "w",  encoding="utf-8")  as  file:
 		json_object  =  json.loads(response_content)
-		json.dump(json_object,  file,  ensure_ascii=False,  indent=4)
+		content = json.dump(json_object,  file,  ensure_ascii=False,  indent=4)
+		file.write(content)
 ```
 >🎬  Appelez cette fonction juste après l'instruction `print(chat_response.choices[0].message.content)` en lui passant la réponse du modèle et le chemin vers le fichier Turtle du graphe.
 ```python 
